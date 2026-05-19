@@ -5,14 +5,14 @@ import { LucideIcon } from "lucide-react";
 import { ArrowUp, ArrowDown } from "lucide-react";
 
 interface AnalyticsStatCardProps {
-  label: string;
-  value: string;
-  subValue: string;
-  change: string;
-  trend: "up" | "down";
-  icon: LucideIcon;
-  gradient?: "primary" | "emerald" | "amber" | "red";
-  textColor?: "white" | "black";
+  label: string
+  value: string
+  subValue: string
+  change: string
+  trend: "up" | "down"
+  icon: LucideIcon
+  gradient?: "primary" | "emerald" | "amber" | "red"
+  textColor?: "white" | "black"
 }
 
 export default function AnalyticsStatCard({
@@ -30,14 +30,14 @@ export default function AnalyticsStatCard({
     emerald: "from-emerald-500/10 to-teal-500/10 border-emerald-200",
     amber: "from-amber-500/10 to-orange-500/10 border-amber-200",
     red: "from-red-500/10 to-orange-500/10 border-red-200",
-  };
+  }
 
   const iconColorClasses = {
     primary: "text-blue-600",
     emerald: "text-emerald-600",
     amber: "text-amber-600",
     red: "text-red-600",
-  };
+  }
 
   const textColorClasses = {
     white: {
@@ -52,15 +52,12 @@ export default function AnalyticsStatCard({
       subValue: "text-slate-700",
       footer: "text-slate-500",
     },
-  };
+  }
 
-  const trendColorClasses =
-    trend === "up" ? "text-emerald-600" : "text-red-600";
+  const trendColorClasses = trend === "up" ? "text-emerald-600" : "text-red-600"
 
   return (
-    <div
-      className={`bg-gradient-to-br ${gradientClasses[gradient]} rounded-lg border p-6 backdrop-blur-sm`}
-    >
+    <div className={`bg-gradient-to-br ${gradientClasses[gradient]} rounded-lg border p-6 backdrop-blur-sm`}>
       <div className="flex items-start justify-between">
         <div>
           <p className={`text-sm font-semibold ${textColorClasses[textColor].label}`}>{label}</p>
@@ -74,15 +71,11 @@ export default function AnalyticsStatCard({
 
       <div className="mt-4 flex items-center gap-1">
         <span className={`flex items-center gap-0.5 text-sm font-semibold ${trendColorClasses}`}>
-          {trend === "up" ? (
-            <ArrowUp className="h-4 w-4" />
-          ) : (
-            <ArrowDown className="h-4 w-4" />
-          )}
+          {trend === "up" ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />}
           {change}
         </span>
-        <span className={`text-xs ${textColorClasses[textColor].footer}`}>vs last month</span>
+          <span className={`text-xs ${textColorClasses[textColor].footer}`}>vs last month</span>
       </div>
     </div>
-  );
+  )
 }
