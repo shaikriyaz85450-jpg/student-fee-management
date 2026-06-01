@@ -45,11 +45,15 @@ export function RecordPaymentDialog({ open, onOpenChange, onSuccess }: Props) {
 
   async function onSubmit() {
     setLoading(true)
-    await new Promise((r) => setTimeout(r, 700))
 
     const vals = form.getValues()
     const matched = students.find((s) => `${s.name}`.toLowerCase().includes(vals.studentName.toLowerCase()) || s.rollNo.toLowerCase().includes(vals.studentName.toLowerCase()))
-    const studentId = matched?.id ?? `S_UNKNOWN`
+    if (!matched) {
+      toast.error("Select an existing student by name or roll number")
+      setLoading(false)
+      return
+    }
+    const studentId = matched.id
     const studentName = matched?.name ?? vals.studentName
     const newPayment = {
       id: `P${Date.now()}`,
@@ -65,12 +69,17 @@ export function RecordPaymentDialog({ open, onOpenChange, onSuccess }: Props) {
       remarks: vals.remarks || "",
     }
 
-    addPayment(newPayment as Payment)
-    toast.success("Payment recorded successfully!")
-    setLoading(false)
-    onOpenChange(false)
-    form.reset()
-    onSuccess?.()
+    try {
+      await addPayment(newPayment as Payment)
+      toast.success("Payment recorded successfully!")
+      onOpenChange(false)
+      form.reset()
+      onSuccess?.()
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Unable to record payment")
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (

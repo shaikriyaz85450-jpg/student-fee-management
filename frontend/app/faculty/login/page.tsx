@@ -7,6 +7,7 @@ import { GraduationCap, ArrowLeft, Eye, EyeOff, User, Lock, BookOpen, CreditCard
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { login, registerStaff } from "@/lib/api"
 
 export default function FacultyAuthPage() {
   const [isRegister, setIsRegister] = useState(false)
@@ -16,26 +17,32 @@ export default function FacultyAuthPage() {
     { icon: Shield, text: "Secure Transactions" },
   ];
   const [showPassword, setShowPassword] = useState(false);
-  const [facultyId, setFacultyId] = useState("");
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [department, setDepartment] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
   const router = useRouter();
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    const payload = {
-      facultyId,
-      email: isRegister ? email : undefined,
-      password,
-      confirmPassword: isRegister ? confirmPassword : undefined,
-    };
-    console.log(isRegister ? "Register form submitted" : "Login form submitted", payload);
-    setTimeout(() => {
-      setIsLoading(false);
+    setError("");
+    try {
+      if (isRegister) {
+        if (password !== confirmPassword) {
+          throw new Error("Passwords do not match");
+        }
+        await registerStaff({ name, email, department, password, role: "FACULTY" });
+      }
+      await login(email, password, "FACULTY");
       router.push("/faculty/dashboard");
-    }, 300);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : isRegister ? "Unable to register" : "Unable to sign in");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -72,28 +79,47 @@ export default function FacultyAuthPage() {
               <div className="mb-4 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-teal-600 shadow-lg shadow-blue-500/25">
                 <GraduationCap className="h-7 w-7 text-white" />
               </div>
-              <h2 className="text-2xl font-bold tracking-tight text-foreground">Faculty Login</h2>
+              <h2 className="text-2xl font-bold tracking-tight text-foreground">
+                {isRegister ? "Faculty Registration" : "Faculty Login"}
+              </h2>
               <p className="mt-2 text-muted-foreground">
-                Enter your credentials to access students details
+                {isRegister ? "Create your faculty account in Neon" : "Enter your credentials to access students details"}
               </p>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-6">
+              {isRegister && (
+                <div className="space-y-2">
+                  <Label htmlFor="name" className="text-sm font-medium text-foreground">
+                    Full Name
+                  </Label>
+                  <Input
+                    id="name"
+                    type="text"
+                    placeholder="Dr. Faculty Name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="h-12 rounded-xl border-border bg-card px-4 text-foreground placeholder:text-muted-foreground focus:border-blue-500 focus:ring-blue-500/20"
+                    required
+                  />
+                </div>
+              )}
+
               {/* Faculty ID Field */}
               <div className="space-y-2">
-                <Label htmlFor="facultyId" className="text-sm font-medium text-foreground">
-                  Faculty ID
+                <Label htmlFor="email" className="text-sm font-medium text-foreground">
+                  Faculty Email
                 </Label>
                 <div className="relative">
                   <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
                     <User className="h-4 w-4 text-muted-foreground" />
                   </div>
                   <Input
-                    id="facultyId"
-                    type="text"
-                    placeholder="Enter your faculty ID"
-                    value={facultyId}
-                    onChange={(e) => setFacultyId(e.target.value)}
+                    id="email"
+                    type="email"
+                    placeholder="faculty@university.edu"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                     className="h-12 rounded-xl border-border bg-card pl-11 text-foreground placeholder:text-muted-foreground focus:border-blue-500 focus:ring-blue-500/20"
                     required
                   />
@@ -102,15 +128,15 @@ export default function FacultyAuthPage() {
 
               {isRegister && (
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="text-sm font-medium text-foreground">
-                    Email
+                  <Label htmlFor="department" className="text-sm font-medium text-foreground">
+                    Department
                   </Label>
                   <Input
-                    id="email"
-                    type="email"
-                    placeholder="Enter your email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    id="department"
+                    type="text"
+                    placeholder="Computer Science"
+                    value={department}
+                    onChange={(e) => setDepartment(e.target.value)}
                     className="h-12 rounded-xl border-border bg-card px-4 text-foreground placeholder:text-muted-foreground focus:border-blue-500 focus:ring-blue-500/20"
                     required
                   />
@@ -170,7 +196,7 @@ export default function FacultyAuthPage() {
               <div className="flex flex-col gap-3">
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">
-                    {isRegister ? "Create your faculty account" : "Enter your faculty credentials"}
+                  {isRegister ? "Create your faculty account" : "Enter your faculty credentials"}
                   </span>
                   <Link
                     href="/faculty/forgot-password"
@@ -183,17 +209,23 @@ export default function FacultyAuthPage() {
                 <Button
                   type="submit"
                   className="h-12 w-full rounded-xl bg-gradient-to-r from-blue-500 to-teal-600 font-semibold text-white"
+                  disabled={isLoading}
                 >
-                  {isRegister ? "Register" : "Sign In"}
+                  {isLoading ? (isRegister ? "Creating account..." : "Signing in...") : isRegister ? "Register & Sign In" : "Sign In"}
                 </Button>
+
+                {error && <p className="text-sm font-medium text-destructive">{error}</p>}
 
                 <Button
                   type="button"
                   variant="secondary"
                   className="h-12 w-full rounded-xl font-semibold"
-                  onClick={() => setIsRegister(!isRegister)}
+                  onClick={() => {
+                    setIsRegister(!isRegister)
+                    setError("")
+                  }}
                 >
-                  {isRegister ? "Back to Login" : "Create an account"}
+                  {isRegister ? "Back to Login" : "Register as Faculty"}
                 </Button>
               </div>
             </form>

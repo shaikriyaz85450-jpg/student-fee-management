@@ -7,6 +7,7 @@ import { Building2, ArrowLeft, Eye, EyeOff, User, Lock, CreditCard, BookOpen, Sh
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { login, registerStaff } from "@/lib/api"
 
 export default function AccountantLoginPage() {
   const features = [
@@ -14,19 +15,34 @@ export default function AccountantLoginPage() {
     { icon: BookOpen, text: "Generate Receipts & Reports" },
     { icon: Shield, text: "Secure Financial Data" },
   ]
+  const [isRegister, setIsRegister] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
+  const [name, setName] = useState("")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [confirmPassword, setConfirmPassword] = useState("")
   const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState("")
   const router = useRouter()
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
-    setTimeout(() => {
-      setIsLoading(false)
+    setError("")
+    try {
+      if (isRegister) {
+        if (password !== confirmPassword) {
+          throw new Error("Passwords do not match")
+        }
+        await registerStaff({ name, email, password, role: "ACCOUNTANT" })
+      }
+      await login(email, password, "ACCOUNTANT")
       router.push("/accountant/dashboard")
-    }, 400)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : isRegister ? "Unable to register" : "Unable to sign in")
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -82,11 +98,30 @@ export default function AccountantLoginPage() {
               <div className="mb-4 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-400 to-amber-600 shadow-lg shadow-amber-400/25">
                 <Building2 className="h-7 w-7 text-white" />
               </div>
-              <h2 className="text-2xl font-bold tracking-tight text-foreground">Accountant Login</h2>
-              <p className="mt-2 text-muted-foreground">Enter your credentials to access the accountant dashboard</p>
+              <h2 className="text-2xl font-bold tracking-tight text-foreground">
+                {isRegister ? "Accountant Registration" : "Accountant Login"}
+              </h2>
+              <p className="mt-2 text-muted-foreground">
+                {isRegister ? "Create your accountant account in Neon" : "Enter your credentials to access the accountant dashboard"}
+              </p>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-6">
+              {isRegister && (
+                <div className="space-y-2">
+                  <Label htmlFor="name" className="text-sm font-medium text-foreground">Full Name</Label>
+                  <Input
+                    id="name"
+                    type="text"
+                    placeholder="Accountant Name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="h-12 rounded-xl border-border bg-card px-4 text-foreground placeholder:text-muted-foreground focus:border-amber-500 focus:ring-amber-500/20"
+                    required
+                  />
+                </div>
+              )}
+
               <div className="space-y-2">
                 <Label htmlFor="email" className="text-sm font-medium text-foreground">Email</Label>
                 <div className="relative">
@@ -134,12 +169,39 @@ export default function AccountantLoginPage() {
                 </div>
               </div>
 
+              {isRegister && (
+                <div className="space-y-2">
+                  <Label htmlFor="confirmPassword" className="text-sm font-medium text-foreground">Confirm Password</Label>
+                  <Input
+                    id="confirmPassword"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Confirm your password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    className="h-12 rounded-xl border-border bg-card px-4 text-foreground placeholder:text-muted-foreground focus:border-amber-500 focus:ring-amber-500/20"
+                    required
+                  />
+                </div>
+              )}
+
               <div className="flex justify-end">
                 <Link href="/accountant/forgot-password" className="text-sm font-medium text-amber-500 transition-colors hover:text-amber-400">Forgot Password?</Link>
               </div>
 
+              {error && <p className="text-sm font-medium text-destructive">{error}</p>}
               <Button type="submit" className="h-12 w-full rounded-xl bg-gradient-to-r from-amber-400 to-amber-600 font-semibold text-white" disabled={isLoading}>
-                Sign In
+                {isLoading ? (isRegister ? "Creating account..." : "Signing in...") : isRegister ? "Register & Sign In" : "Sign In"}
+              </Button>
+              <Button
+                type="button"
+                variant="secondary"
+                className="h-12 w-full rounded-xl font-semibold"
+                onClick={() => {
+                  setIsRegister(!isRegister)
+                  setError("")
+                }}
+              >
+                {isRegister ? "Back to Login" : "Register as Accountant"}
               </Button>
             </form>
 

@@ -7,6 +7,7 @@ import { GraduationCap, ArrowLeft, Eye, EyeOff, User, Lock, BookOpen, CreditCard
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { login } from "@/lib/api"
 
 export default function StudentLoginPage() {
   const features = [
@@ -18,11 +19,20 @@ export default function StudentLoginPage() {
   const [studentId, setStudentId] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
   const router = useRouter();
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Login form submitted", { studentId, password });
-    router.push("/student/dashboard");
+    setIsLoading(true);
+    setError("");
+    try {
+      await login(studentId, password, "STUDENT");
+      router.push("/student/dashboard");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to sign in");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -69,7 +79,7 @@ export default function StudentLoginPage() {
               {/* Student ID Field */}
               <div className="space-y-2">
                 <Label htmlFor="studentId" className="text-sm font-medium text-foreground">
-                  Student ID
+                  Email or Roll Number
                 </Label>
                 <div className="relative">
                   <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
@@ -78,7 +88,7 @@ export default function StudentLoginPage() {
                   <Input
                     id="studentId"
                     type="text"
-                    placeholder="Enter your student ID"
+                    placeholder="Enter your email or roll number"
                     value={studentId}
                     onChange={(e) => setStudentId(e.target.value)}
                     className="h-12 rounded-xl border-border bg-card pl-11 text-foreground placeholder:text-muted-foreground focus:border-emerald-500 focus:ring-emerald-500/20"
@@ -130,11 +140,13 @@ export default function StudentLoginPage() {
               </div>
 
               {/* Login Button */}
+              {error && <p className="text-sm font-medium text-destructive">{error}</p>}
 <Button
   type="submit"
   className="h-12 w-full rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 font-semibold text-white"
+  disabled={isLoading}
 >
-  Sign In
+  {isLoading ? "Signing in..." : "Sign In"}
 </Button>
             </form>
 

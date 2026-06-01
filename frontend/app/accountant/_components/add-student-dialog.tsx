@@ -20,6 +20,7 @@ const schema = z.object({
   firstName: z.string().min(2, "Required"),
   lastName: z.string().min(1, "Required"),
   rollNo: z.string().min(3, "Required"),
+  email: z.string().email("Enter valid email"),
   class: z.string().min(1, "Required"),
   section: z.string().min(1, "Required"),
   parentName: z.string().min(2, "Required"),
@@ -40,12 +41,11 @@ export function AddStudentDialog({ open, onOpenChange, onSuccess }: Props) {
   const { addStudent, classFeeMap } = useData()
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
-    defaultValues: { firstName: "", lastName: "", rollNo: "", class: "", section: "A", parentName: "", phone: "", feeCategory: "Tuition + Lab + Bus", discount: "None" },
+    defaultValues: { firstName: "", lastName: "", rollNo: "", email: "", class: "", section: "A", parentName: "", phone: "", feeCategory: "Tuition + Lab + Bus", discount: "None" },
   })
 
   async function onSubmit() {
     setLoading(true)
-    await new Promise((r) => setTimeout(r, 700))
 
     const vals = form.getValues()
     const totalFee = classFeeMap.find((c: any) => c.class === vals.class)?.annualFee ?? 10000
@@ -57,7 +57,7 @@ export function AddStudentDialog({ open, onOpenChange, onSuccess }: Props) {
       section: vals.section,
       parentName: vals.parentName,
       phone: vals.phone,
-      email: "",
+      email: vals.email,
       department: "",
       semester: "",
       totalFee,
@@ -69,12 +69,17 @@ export function AddStudentDialog({ open, onOpenChange, onSuccess }: Props) {
       joinDate: new Date().toISOString().split("T")[0],
     }
 
-    addStudent(newStudent)
-    toast.success("Student added successfully!")
-    setLoading(false)
-    onOpenChange(false)
-    form.reset()
-    onSuccess?.()
+    try {
+      await addStudent(newStudent)
+      toast.success("Student added successfully!")
+      onOpenChange(false)
+      form.reset()
+      onSuccess?.()
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Unable to add student")
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -97,6 +102,11 @@ export function AddStudentDialog({ open, onOpenChange, onSuccess }: Props) {
               <FormField control={form.control} name="rollNo" render={({ field }) => (
                 <FormItem><FormLabel>Roll number</FormLabel><FormControl><Input placeholder="09-A-015" {...field} /></FormControl><FormMessage /></FormItem>
               )} />
+              <FormField control={form.control} name="email" render={({ field }) => (
+                <FormItem><FormLabel>Email</FormLabel><FormControl><Input type="email" placeholder="student@university.edu" {...field} /></FormControl><FormMessage /></FormItem>
+              )} />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
               <FormField control={form.control} name="class" render={({ field }) => (
                 <FormItem><FormLabel>Class</FormLabel>
                   <Select onValueChange={field.onChange} value={field.value}>

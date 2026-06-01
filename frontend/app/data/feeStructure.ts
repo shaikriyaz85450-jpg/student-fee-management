@@ -1,12 +1,4 @@
-import type { FeeStructureItem, ClassFeeMap, DiscountDefinition } from "@/types"
-
-export const FEE_STRUCTURE: FeeStructureItem[] = [
-  { id: "F001", category: "Tuition", description: "Core academic tuition fee", amount: 8000, frequency: "Per Term", applicableClasses: "All classes" },
-  { id: "F002", category: "Lab", description: "Science & computer lab fee", amount: 1200, frequency: "Per Term", applicableClasses: "Class 8–10" },
-  { id: "F003", category: "Bus", description: "School transport fee", amount: 2500, frequency: "Per Term", applicableClasses: "Optional" },
-  { id: "F004", category: "Library", description: "Library & reading resources", amount: 600, frequency: "Annual", applicableClasses: "All classes" },
-  { id: "F005", category: "Sports", description: "Sports & physical education", amount: 400, frequency: "Annual", applicableClasses: "All classes" },
-]
+import type { ClassFeeMap, DiscountDefinition } from "@/types"
 
 export const CLASS_FEE_MAP: ClassFeeMap[] = [
   { class: "Class 6", annualFee: 8800 },

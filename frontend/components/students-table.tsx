@@ -1,6 +1,9 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
+import { toast } from "sonner"
+import { useData } from "@/app/data/provider"
+import { getStoredUser } from "@/lib/api"
 
 export interface StudentTableRow {
   id: string
@@ -37,6 +40,9 @@ export function StudentsTable({ students, onViewStudent }: StudentsTableProps) {
               <tr>
                 <td colSpan={6} className="px-4 py-6 text-center text-sm text-muted-foreground">
                   No students found.
+              const { addPayment, students: fullStudents } = useData()
+              const storedUser = typeof window !== "undefined" ? getStoredUser() : null
+              const role = storedUser?.role
                 </td>
               </tr>
             ) : (

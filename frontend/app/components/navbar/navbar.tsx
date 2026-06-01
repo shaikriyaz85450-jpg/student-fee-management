@@ -254,7 +254,7 @@ export function DashboardNavbar({
             <DropdownMenuTrigger asChild>
               <Button
                 variant="ghost"
-                className="flex items-center gap-2 px-2 hover:bg-card/60 transition-colors"
+                className="group flex items-center gap-2 px-2 hover:bg-card/60 transition-colors"
               >
                 <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 text-sm font-semibold text-white shadow-md shadow-primary/20">
                   {resolvedName

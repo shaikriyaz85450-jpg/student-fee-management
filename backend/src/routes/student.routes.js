@@ -20,6 +20,6 @@ router
   .route("/:id")
   .get(authorize("STUDENT", "FACULTY", "ACCOUNTANT"), validate(uuidParam), studentController.getStudent)
   .put(authorize("FACULTY", "ACCOUNTANT"), validate(updateStudentSchema), studentController.updateStudent)
-  .delete(authorize("ACCOUNTANT"), validate(uuidParam), studentController.deleteStudent);
+  .delete(authorize("FACULTY", "ACCOUNTANT"), validate(uuidParam), studentController.deleteStudent);
 
 module.exports = router;

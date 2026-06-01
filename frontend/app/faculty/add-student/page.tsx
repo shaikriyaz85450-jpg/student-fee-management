@@ -22,6 +22,7 @@ interface StudentFormData {
   libraryFee: string
   otherFee: string
   photo: File | null
+  password?: string
 }
 
 const departments = [
@@ -58,6 +59,7 @@ export default function AddStudentPage() {
     libraryFee: "2500",
     otherFee: "0",
     photo: null,
+    password: "",
   })
 
   const [photoPreview, setPhotoPreview] = useState<string | null>(null)
@@ -89,7 +91,7 @@ export default function AddStudentPage() {
     }
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     // construct Student object and add via provider so stats update everywhere
     const total = totalFee
@@ -111,13 +113,20 @@ export default function AddStudentPage() {
       discount: "None",
       feeCategory: "Tuition",
       joinDate: new Date().toISOString().split("T")[0],
+      // include password so DataProvider can send it to the backend
+      // @ts-ignore: extra field used by provider
+      password: formData.password,
     }
 
-    addStudent(newStudent)
-    toast.success("Student added successfully")
-    setSubmitted(true)
-    setTimeout(() => setSubmitted(false), 3000)
-    handleReset()
+    try {
+      await addStudent(newStudent)
+      toast.success("Student added successfully")
+      setSubmitted(true)
+      setTimeout(() => setSubmitted(false), 3000)
+      handleReset()
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Unable to add student")
+    }
   }
 
   const handleReset = () => {
@@ -265,6 +274,18 @@ export default function AddStudentPage() {
                           value={formData.email}
                           onChange={handleInputChange}
                           placeholder="student@university.edu"
+                          className="rounded-lg border border-border bg-muted/50 px-4 py-2 text-foreground"
+                          required
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium text-foreground">Password</label>
+                        <Input
+                          type="password"
+                          name="password"
+                          value={formData.password}
+                          onChange={handleInputChange}
+                          placeholder="Set initial password"
                           className="rounded-lg border border-border bg-muted/50 px-4 py-2 text-foreground"
                           required
                         />
