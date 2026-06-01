@@ -71,6 +71,35 @@ const createPayment = async (payload) =>
       });
     }
 
+    // Recalculate student totals and fee status
+    if (payment.studentId) {
+      const agg = await tx.payment.aggregate({
+        _sum: { amount: true },
+        where: { studentId: payment.studentId, status: "PAID" },
+      });
+
+      const paidSum = agg._sum.amount || 0;
+
+      const student = await tx.student.findUnique({ where: { id: payment.studentId } });
+      const totalFee = student?.totalFee || 0;
+      const paidAmount = paidSum;
+      const pendingAmount = (typeof totalFee === 'object' ? Number(totalFee.toString()) : Number(totalFee)) - (typeof paidAmount === 'object' ? Number(paidAmount.toString()) : Number(paidAmount));
+      const normalizedPending = pendingAmount > 0 ? pendingAmount : 0;
+
+      let feeStatus = "PENDING";
+      if (normalizedPending === 0) feeStatus = "PAID";
+      else if (paidAmount > 0 && normalizedPending > 0) feeStatus = "PARTIAL";
+
+      await tx.student.update({
+        where: { id: payment.studentId },
+        data: {
+          paidAmount: paidAmount,
+          pendingAmount: normalizedPending,
+          feeStatus,
+        },
+      });
+    }
+
     return tx.payment.findUnique({
       where: { id: payment.id },
       include: { student: true, receipt: true },
@@ -91,13 +120,73 @@ const updatePayment = async (id, payload) =>
       });
     }
 
+    // Recalculate student totals and fee status
+    if (payment.studentId) {
+      const agg = await tx.payment.aggregate({
+        _sum: { amount: true },
+        where: { studentId: payment.studentId, status: "PAID" },
+      });
+
+      const paidSum = agg._sum.amount || 0;
+      const student = await tx.student.findUnique({ where: { id: payment.studentId } });
+      const totalFee = student?.totalFee || 0;
+      const paidAmount = paidSum;
+      const pendingAmount = (typeof totalFee === 'object' ? Number(totalFee.toString()) : Number(totalFee)) - (typeof paidAmount === 'object' ? Number(paidAmount.toString()) : Number(paidAmount));
+      const normalizedPending = pendingAmount > 0 ? pendingAmount : 0;
+
+      let feeStatus = "PENDING";
+      if (normalizedPending === 0) feeStatus = "PAID";
+      else if (paidAmount > 0 && normalizedPending > 0) feeStatus = "PARTIAL";
+
+      await tx.student.update({
+        where: { id: payment.studentId },
+        data: {
+          paidAmount: paidAmount,
+          pendingAmount: normalizedPending,
+          feeStatus,
+        },
+      });
+    }
+
     return tx.payment.findUnique({
       where: { id },
       include: { student: true, receipt: true },
     });
   });
 
-const deletePayment = (id) => prisma.payment.delete({ where: { id } });
+const deletePayment = async (id) =>
+  prisma.$transaction(async (tx) => {
+    const payment = await tx.payment.delete({ where: { id } });
+
+    if (payment.studentId) {
+      const agg = await tx.payment.aggregate({
+        _sum: { amount: true },
+        where: { studentId: payment.studentId, status: "PAID" },
+      });
+
+      const paidSum = agg._sum.amount || 0;
+      const student = await tx.student.findUnique({ where: { id: payment.studentId } });
+      const totalFee = student?.totalFee || 0;
+      const paidAmount = paidSum;
+      const pendingAmount = (typeof totalFee === 'object' ? Number(totalFee.toString()) : Number(totalFee)) - (typeof paidAmount === 'object' ? Number(paidAmount.toString()) : Number(paidAmount));
+      const normalizedPending = pendingAmount > 0 ? pendingAmount : 0;
+
+      let feeStatus = "PENDING";
+      if (normalizedPending === 0) feeStatus = "PAID";
+      else if (paidAmount > 0 && normalizedPending > 0) feeStatus = "PARTIAL";
+
+      await tx.student.update({
+        where: { id: payment.studentId },
+        data: {
+          paidAmount: paidAmount,
+          pendingAmount: normalizedPending,
+          feeStatus,
+        },
+      });
+    }
+
+    return payment;
+  });
 
 module.exports = {
   listPayments,

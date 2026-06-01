@@ -33,6 +33,12 @@ enum PaymentMode {
   BANK_TRANSFER
 }
 
+enum FeeStatus {
+  PAID
+  PARTIAL
+  PENDING
+}
+
 model User {
   id         String      @id @default(uuid())
   name       String
@@ -75,6 +81,12 @@ model Student {
   semester    Int
   email       String    @unique
   phone       String?
+  profilePhoto String?
+  totalFee    Decimal   @default(0) @db.Decimal(12, 2)
+  paidAmount  Decimal   @default(0) @db.Decimal(12, 2)
+  pendingAmount Decimal @default(0) @db.Decimal(12, 2)
+  dueDate     DateTime?
+  feeStatus   FeeStatus @default(PENDING)
   user        User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
   payments    Payment[]
   createdAt   DateTime  @default(now())
@@ -89,6 +101,9 @@ model Faculty {
   name       String
   department String
   email      String   @unique
+  phone      String?
+  designation String?
+  profilePhoto String?
   user       User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
@@ -101,6 +116,9 @@ model Accountant {
   userId    String?  @unique
   name      String
   email     String   @unique
+  phone     String?
+  designation String?
+  profilePhoto String?
   user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

@@ -6,6 +6,9 @@ const facultyBody = z.object({
   department: z.string().min(2),
   email: z.string().email(),
   password: z.string().min(8).optional(),
+  phone: z.string().min(7).max(20).optional().nullable(),
+  designation: z.string().min(2).optional().nullable(),
+  profilePhoto: z.string().url().optional().nullable(),
 });
 
 const createFacultySchema = z.object({

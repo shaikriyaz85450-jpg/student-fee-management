@@ -98,7 +98,7 @@ const login = async ({ identifier, password, role, ipAddress, userAgent }) => {
   };
 };
 
-const registerUser = async ({ name, email, password, role, department }) => {
+const registerUser = async ({ name, email, password, role, department, phone, designation, profilePhoto }) => {
   if (role === "STUDENT") {
     throw new AppError("Students must be created from the student records workflow", 400);
   }
@@ -120,6 +120,9 @@ const registerUser = async ({ name, email, password, role, department }) => {
           name,
           email,
           department: department || "General",
+          ...(phone ? { phone } : {}),
+          ...(designation ? { designation } : {}),
+          ...(profilePhoto ? { profilePhoto } : {}),
         },
       });
     }
@@ -130,6 +133,9 @@ const registerUser = async ({ name, email, password, role, department }) => {
           userId: createdUser.id,
           name,
           email,
+          ...(phone ? { phone } : {}),
+          ...(designation ? { designation } : {}),
+          ...(profilePhoto ? { profilePhoto } : {}),
         },
       });
     }

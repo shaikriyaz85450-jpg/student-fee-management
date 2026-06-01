@@ -46,13 +46,9 @@ const normalizeAmount = (value: unknown) => Number(value || 0)
 
 const mapStudent = (student: any): Student => {
   const payments = student.payments || []
-  const paidAmount = payments
-    .filter((payment: any) => payment.status === "PAID")
-    .reduce((sum: number, payment: any) => sum + normalizeAmount(payment.amount), 0)
-  const feeTotal = payments.reduce((sum: number, payment: any) => sum + normalizeAmount(payment.amount), 0)
-  const totalFee = Math.max(feeTotal, paidAmount)
-  const dueAmount = Math.max(totalFee - paidAmount, 0)
-
+  const totalFee = normalizeAmount(student.totalFee || payments.reduce((sum: number, p: any) => sum + normalizeAmount(p.amount), 0))
+  const paidAmount = normalizeAmount(student.paidAmount || payments.filter((payment: any) => payment.status === "PAID").reduce((sum: number, payment: any) => sum + normalizeAmount(payment.amount), 0))
+  const dueAmount = normalizeAmount(student.pendingAmount || Math.max(totalFee - paidAmount, 0))
   return {
     id: student.id,
     name: student.name,
@@ -67,7 +63,7 @@ const mapStudent = (student: any): Student => {
     totalFee,
     paidAmount,
     dueAmount,
-    status: dueAmount === 0 && paidAmount > 0 ? "Paid" : paidAmount > 0 ? "Partial" : "Pending",
+    status: (student.feeStatus || (dueAmount === 0 && paidAmount > 0 ? "PAID" : paidAmount > 0 ? "PARTIAL" : "PENDING")),
     discount: "None",
     feeCategory: "Tuition",
     joinDate: student.createdAt?.slice(0, 10) || new Date().toISOString().slice(0, 10),

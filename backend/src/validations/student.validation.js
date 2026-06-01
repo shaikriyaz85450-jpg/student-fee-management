@@ -8,6 +8,7 @@ const studentBody = z.object({
   semester: z.coerce.number().int().min(1).max(12),
   email: z.string().email(),
   phone: z.string().min(7).max(20).optional().nullable(),
+  profilePhoto: z.string().url().optional().nullable(),
   password: z.string().min(8).optional(),
 });
 
