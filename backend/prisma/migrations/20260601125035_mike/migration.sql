@@ -1,0 +1,9 @@
+-- CreateEnum
+CREATE TYPE "FeeStatus" AS ENUM ('PAID', 'PARTIAL', 'PENDING');
+
+-- AlterTable
+ALTER TABLE "Student" ADD COLUMN     "dueDate" TIMESTAMP(3),
+ADD COLUMN     "feeStatus" "FeeStatus" NOT NULL DEFAULT 'PENDING',
+ADD COLUMN     "paidAmount" DECIMAL(12,2) NOT NULL DEFAULT 0,
+ADD COLUMN     "pendingAmount" DECIMAL(12,2) NOT NULL DEFAULT 0,
+ADD COLUMN     "totalFee" DECIMAL(12,2) NOT NULL DEFAULT 0;
