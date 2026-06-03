@@ -1,6 +1,6 @@
 "use client"
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1"
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://student-fee-management-2.onrender.com/api/v1"
 const TOKEN_KEY = "edufee_access_token"
 const USER_KEY = "edufee_user"
 
