@@ -226,17 +226,6 @@ export default function StudentLoginPage() {
 >
   {isLoading ? (isRegister ? "Creating account..." : "Signing in...") : isRegister ? "Register & Sign In" : "Sign In"}
 </Button>
-              <Button
-                type="button"
-                variant="secondary"
-                className="h-12 w-full rounded-xl font-semibold"
-                onClick={() => {
-                  setIsRegister(!isRegister)
-                  setError("")
-                }}
-              >
-                {isRegister ? "Back to Login" : "Register as Student"}
-              </Button>
             </form>
 
             {/* Security Note */}
